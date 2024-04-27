@@ -3,6 +3,6 @@ pandas
 matplotlib
 numpy
 xlrd
-python-cv
+opencv-python
 pillow
 datetime
