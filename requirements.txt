@@ -3,8 +3,6 @@ pandas
 matplotlib
 numpy
 xlrd
-math
-cv2
-random
-PIL
+python-cv
+pillow
 datetime
