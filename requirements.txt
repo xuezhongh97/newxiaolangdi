@@ -1,0 +1,13 @@
+streamlit
+pandas
+matplotlib
+numpy
+os
+calendar
+time
+xlrd
+math
+cv2
+random
+PIL
+datetime
