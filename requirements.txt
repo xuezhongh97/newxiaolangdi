@@ -2,7 +2,6 @@ streamlit
 pandas
 matplotlib
 numpy
-os
 calendar
 time
 xlrd
