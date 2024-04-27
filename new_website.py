@@ -7,7 +7,6 @@ import calendar
 import time
 import xlrd
 import math
-import cv2 as cv
 import matplotlib.image as mpimg # mpimg 用于读取图片
 import random as rd
 from PIL import Image, ImageDraw, ImageFont
@@ -326,62 +325,7 @@ def searchstation():
         if station==i.get_name():
             i.get_info()
 
-def drawline(station1,station2,line):
-    global linemap
-    for i in list_station:
-        if station1==i.get_name():
-            Station1=i
-    for i in list_station:
-        if station2==i.get_name():
-            Station2=i
-    n1,y1,x1,z1=Station1.get_position()
-    n2,y2,x2,z1=Station2.get_position()
-    mainline=[1,3,4,6,8,11,12]
-    if line.get_numero() in mainline:
-        width=5
-    else:
-        width=3
-    cv.line(linemap, (y1, x1), (y2, x2), (line.get_linecolor()[2],line.get_linecolor()[1],line.get_linecolor()[0]), width) #9
-    
 
-def drawpoint(station,line,isblackened):
-    global linemap
-    if isblackened==1:
-        sizefont=20
-        radius=6
-        thickness=3
-    else:
-        sizefont=10
-        radius=4
-        thickness=2
-    for i in list_station:
-        if station==i.get_name():
-            Station=i
-    n1,y1,x1,z1=Station.get_position()
-    cv.circle(linemap, (y1,x1), radius, colorbar[Station.get_zone()-1], thickness) #33
-    img_PIL = Image.fromarray(cv.cvtColor(linemap, cv.COLOR_BGR2RGB))
-    font = ImageFont.truetype('wqy-microhei.ttc', sizefont)
-    position = (y1+10,x1-5)
-    str = Station.get_name()
-    draw = ImageDraw.Draw(img_PIL)
-    draw.text(position, str, font=font,  fill=(255,255,255))
-    linemap = cv.cvtColor(np.asarray(img_PIL),cv.COLOR_RGB2BGR)
-
-def drawnumber(station,line):
-    global linemap
-    for i in list_station:
-        if station==i.get_name():
-            Station=i
-    n1,y1,x1,z1=Station.get_position()
-    img_PIL = Image.fromarray(cv.cvtColor(linemap, cv.COLOR_BGR2RGB))
-    sizefont=30
-    font = ImageFont.truetype('wqy-microhei.ttc', sizefont)
-    fillColor = line.get_linecolor()
-    position = (y1-40,x1-20)
-    str1 = str(line.get_numero())
-    draw = ImageDraw.Draw(img_PIL)
-    draw.text(position, str1, font=font,  fill=fillColor)
-    linemap = cv.cvtColor(np.asarray(img_PIL),cv.COLOR_RGB2BGR)
    
     
 def searchroute(startstation,endstation,line,timenow1,ticketflag):
@@ -707,7 +651,6 @@ def displayresults(route,startstation,endstation,ticketflag):
 #    print("\n")
     print("到达时间"," ","%02d"%int(results[6]//60),":","%02d"%int(results[6]%60))
     print("")
-    cv.imwrite('final.png', linemap)   
     
 def displayresults_short(route,startstation,endstation,ticketflag):
     global linemap
