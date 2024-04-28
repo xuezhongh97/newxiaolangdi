@@ -296,16 +296,6 @@ class Station:
 #now = (datetime.datetime.utcnow() + datetime.timedelta(hours=8))
 
 # 判断今天是否为周末
-def is_week_lastday():
-    # 假如今天是周日
-    sunday = now.weekday()
-    # 如果今天是周日，则返回True
-    if sunday == 6:
-        return True
-    else:
-        pass
-
-
     
 def searchline():
     try:
@@ -450,107 +440,8 @@ def search4(stationstarted,stationended,route):
     return route
   
 
-def achat():
-    global charge
-    try:
-        zonenumber=int(input("请输入乘坐区号\n"))
-    except ValueError:
-        print("")    
-    os.system("clear")    
-    for i in prince_list:
-        if i[0]==zonenumber:
-            try:
-                print("优惠类型？\n")
-                print(color.UNDERLINE+"1 市民"+color.END,end="\t")
-                print(color.UNDERLINE+"2 学生"+color.END,end="\t")
-                print(color.UNDERLINE+"3 老人"+color.END,end="\t")
-                print(color.UNDERLINE+"4 游客"+color.END,end="\t")
-                print(color.UNDERLINE+"5 无优惠"+color.END,end="\n")
-                reducedtype=int(input(""))
-            except ValueError:
-                print("")                
-            reduced=1
-            if reducedtype==1:
-                reduced=0.8
-            if reducedtype==2:
-                reduced=0.3
-            if reducedtype==3:
-                reduced=0.5
-            if reducedtype==4:
-                reduced=0.9
-            newprice=i[1]*reduced
-            print("票价为",round(newprice,1),"元")
-            try:
-                print("是否支付\n")
-                print(color.UNDERLINE+"0 取消"+color.END,end="\t")
-                print(color.UNDERLINE+"1 确认"+color.END,end="\n")
-                ispayed=int(input(""))
-            except ValueError:
-                print("")
-            os.system("clear")
-            if ispayed and charge>=round(newprice,1):
-                charge-=round(newprice,1)
-                print("支付成功，以下为确认码")
-                identi=rd.randint(1000000000000,10000000000000)                
-                print(identi)
-                identity.append(identi)
-                return
-            else:
-                print("支付失败")
-                return
-    print("信息输入错误")
-    return
-
-def acount():
-    global charge
-    os.system("clear")
-    print("账户信息")
-    print("余额:",round(charge,1),"元")
-    if len(identity)>0:
-        print("已购买车票验证码")
-        for i in identity:
-            print(i)
-    else:
-        print("无车票验证码")
-    return
-
-
 
     
-
-def UIdisplay(results):
-    global linemap
-    for i in list_station:
-        if results[0]==i.get_name():
-            stationstarted=i
-        if results[1]==i.get_name():
-            stationended=i
-    for k in list_line:
-        if k.get_numero()==results[7]:
-            linetemp=k
-    print(color.RED+str(results[7])+color.END,"\t",color.YELLOW+results[-2]+color.END)
-    print(color.BLUE+stationstarted.get_name()+color.END,color.BLUE+"---->"+color.END,color.BLUE+stationended.get_name()+color.END)
-    print("%02d"%int(results[4]//60),":","%02d"%int(results[4]%60),"---->","%02d"%int(results[6]//60),":","%02d"%int(results[6]%60))
-    print("+",int(results[3]))
-    print("")
-    isconnected=0
-    drawnumber(results[5][0],linetemp)
-    for j in results[5]:
-        for m in list_station:
-            if j==m.get_name():
-
-                delaytemp=abs(linetemp.get_interval()[linetemp.get_station().index(m.get_name())]-linetemp.get_interval()[linetemp.get_station().index(stationstarted.get_name())])
-                print(zonebar[m.get_zone()],"\t","%02d"%int((results[4]+delaytemp)//60),":","%02d"%int((results[4]+delaytemp)%60),"\t ",j)
-    for j in range(len(results[5])-1):
-        drawline(results[5][j],results[5][j+1],linetemp)
-                
-    for j in range(len(results[5])-1):
-        if j==len(results[5])-2:
-            drawpoint(results[5][j+1],linetemp,1)
-        else:
-            drawpoint(results[5][j+1],linetemp,0)            
-            
-    print("")
 
 def UIdisplay_streamlit(results, output_str):
     for i in list_station:
@@ -562,7 +453,6 @@ def UIdisplay_streamlit(results, output_str):
         if k.get_numero()==results[7]:
             linetemp=k   
     #output_str += f'<span style="font-size:24px; font-weight:bold;">{str(results[7])}</span>'
-    output_str += '<span style="font-size:24px; font-weight:bold;">'+str(results[7])+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+results[-2]+"</span>  \n"
     if results[4] > 1440:
         results4 = results[4] - 1440
     else:
@@ -571,9 +461,11 @@ def UIdisplay_streamlit(results, output_str):
         results6 = results[6] - 1440
     else:
         results6 = results[6]
-    output_str += '<span style="font-size:18px; font-weight:bold;">'+stationstarted.get_name()+"%02d"%int(results4//60)+":"+"%02d"%int(results4%60)+'&nbsp;→&nbsp;'+stationended.get_name()+"%02d"%int(results6//60)+":"+"%02d"%int(results6%60)+"</span>  \n"
+    spendtime = results[6] - results[4]
+    output_str += '<span style="font-size:20px;">'+stationstarted.get_name()+'&nbsp;'+"%02d"%int(results4//60)+":"+"%02d"%int(results4%60)+'&nbsp;→&nbsp;'+stationended.get_name()+'&nbsp;'+"%02d"%int(results6//60)+":"+"%02d"%int(results6%60)+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;用时" + str(int(spendtime)) + "分钟</span>  \n"
+    output_str += '<span style="font-size:18px; font-weight:bold;">'+str(results[7])+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+results[-2]+"</span>  \n"
 #    output_str += '<span style="font-size:16px; font-weight:bold;">'+"%02d"%int(results[4]//60)+":"+"%02d"%int(results[4]%60)+"&nbsp;→&nbsp;"+"%02d"%int(results[6]//60)+":"+"%02d"%int(results[6]%60)+"</span>  \n"
-    output_str += '<span style="font-size:12px; font-weight:bold;">'+"等待约"+str(int(results[3]))+"分钟</span>  \n"
+    output_str += '<span style="font-size:14px; font-weight:bold;">'+"等待约"+str(int(results[3]))+"分钟</span>  \n"
     for j in results[5]:
         for m in list_station:
             if j==m.get_name():
@@ -581,151 +473,12 @@ def UIdisplay_streamlit(results, output_str):
                 #print(zonebar[m.get_zone()],"\t","%02d"%int((results[4]+delaytemp)//60),":","%02d"%int((results[4]+delaytemp)%60),"\t ",j)
                 if results4+delaytemp > 1440:
                     results4 -= 1440
-                output_str += "%02d"%int((results4+delaytemp)//60)+":"+"%02d"%int((results4+delaytemp)%60)+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+j+"  \n"
+                output_str += '<span style="font-size:12px;">'+ "%02d"%int((results4+delaytemp)//60)+":"+"%02d"%int((results4+delaytemp)%60)+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+j+"</span>  \n"
     output_str += "  \n"
     return output_str
 
     
-def displayresults(route,startstation,endstation,ticketflag):
-    global linemap
-    print(color.BOLD+startstation+color.END,color.BOLD+"---->"+color.END,color.BOLD+endstation+color.END,"\n")
-    if route[0]==1:
-        for i in list_line:
-            if route[1]==i.get_numero():
-                drawpoint(startstation,i,1)
-        results=searchroute(startstation,endstation,route[1],timenow,ticketflag)
-        if results:
-            UIdisplay(results)
-        else:
-            return 0
-    if route[0]==2:
-        for i in list_line:
-            if route[1]==i.get_numero():
-                drawpoint(startstation,i,1)
-        results=searchroute(startstation,route[2],route[1],timenow,ticketflag)
-        if results: UIdisplay(results)
-        else:
-            return 0
-        results=searchroute(route[2],endstation,route[3],results[-4],results[-1])
-        if results: UIdisplay(results)
-        else:
-            return 0        
-    if route[0]==3:
-        for i in list_line:
-            if route[1]==i.get_numero():
-                drawpoint(startstation,i,1)
-        results=searchroute(startstation,route[2],route[1],timenow,ticketflag)
-        if results: UIdisplay(results)
-        else:
-            return 0
-        results=searchroute(route[2],route[4],route[3],results[-4],results[-1])
-        if results: UIdisplay(results)
-        else:
-            return 0
-        results=searchroute(route[4],endstation,route[5],results[-4],results[-1])
-        if results:
-            UIdisplay(results)
-        else:
-            return 0
-    if route[0]==4:
-        for i in list_line:
-            if route[1]==i.get_numero():
-                drawpoint(startstation,i,1)
-        results=searchroute(startstation,route[2],route[1],timenow,ticketflag)
-        if results: UIdisplay(results)
-        else: return 0
-        results=searchroute(route[2],route[4],route[3],results[-4],results[-1])
-        if results: UIdisplay(results)
-        else: return 0
-        results=searchroute(route[4],route[6],route[5],results[-4],results[-1])
-        if results: UIdisplay(results)
-        else: return 0                      
-        results=searchroute(route[6],endstation,route[7],results[-4],results[-1])
-        if results: UIdisplay(results)
-        else: return 0
-    print("")
-    ticketflag2 = list(set(results[-1]))
-#    print("经过区间")
-#    for i in ticketflag2:
-#        print(i,end="")
-#    print("\n")
-    print("到达时间"," ","%02d"%int(results[6]//60),":","%02d"%int(results[6]%60))
-    print("")
     
-def displayresults_short(route,startstation,endstation,ticketflag):
-    global linemap
-    if route[0]==1:
-        for i in list_line:
-            if route[1]==i.get_numero():
-                drawpoint(startstation,i,1)
-        results=searchroute(startstation,endstation,route[1],timenow,ticketflag)
-        if results:
-            print(results[7], " ", end="")
-        else:
-            return 0
-    if route[0]==2:
-        for i in list_line:
-            if route[1]==i.get_numero():
-                drawpoint(startstation,i,1)
-        results=searchroute(startstation,route[2],route[1],timenow,ticketflag)
-        if results:
-            print(results[7], ">", end=" ")
-        else:
-            return 0
-        results=searchroute(route[2],endstation,route[3],results[-4],results[-1])
-        if results:
-            print(results[7], " ", end="")
-        else:
-            return 0      
-    if route[0]==3:
-        for i in list_line:
-            if route[1]==i.get_numero():
-                drawpoint(startstation,i,1)
-        results=searchroute(startstation,route[2],route[1],timenow,ticketflag)
-        if results:
-            print(results[7], ">", end=" ")
-        else:
-            return 0
-        results=searchroute(route[2],route[4],route[3],results[-4],results[-1])
-        if results:
-            print(results[7], ">", end=" ")
-        else:
-            return 0
-        results=searchroute(route[4],endstation,route[5],results[-4],results[-1])
-        if results:
-            print(results[7], " ", end="")
-        else:
-            return 0
-    if route[0]==4:
-        for i in list_line:
-            if route[1]==i.get_numero():
-                drawpoint(startstation,i,1)
-        results=searchroute(startstation,route[2],route[1],timenow,ticketflag)
-        if results:
-            print(results[7], ">", end=" ")
-        else:
-            return 0
-        results=searchroute(route[2],route[4],route[3],results[-4],results[-1])
-        if results:
-            print(results[7], ">", end=" ")
-        else:
-            return 0
-        results=searchroute(route[4],route[6],route[5],results[-4],results[-1])
-        if results:
-            print(results[7], ">", end=" ")
-        else:
-            return 0                     
-        results=searchroute(route[6],endstation,route[7],results[-4],results[-1])
-        if results:
-            print(results[7], " ", end="")
-        else:
-            return 0
-    
-    
-    print(" ", "%02d"%int(results[6]//60),":","%02d"%int(results[6]%60))
-    
-
-
 def displayresults_short_streamlit (route,startstation,endstation,ticketflag):
     global linemap
     output_content = " "
@@ -816,206 +569,16 @@ def displayresults_short_streamlit (route,startstation,endstation,ticketflag):
         results6 = results[6] - 1440
     else:
         results6 = results[6]
-    
-    output_content += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;到达时间&nbsp;&nbsp;" + "%02d"%int(results6//60) + ":" + "%02d"%int(results6%60)
+    spendtime = results[6] - timenow
+    output_content += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + "&nbsp;&nbsp;约" + "%d"%int(spendtime) + "分钟&nbsp;&nbsp;" + "%02d"%int(results6//60) + ":" + "%02d"%int(results6%60) + "到达"
     with st.expander(output_content):
         st.markdown(output_details,unsafe_allow_html=True)
     #st.write(" ", "%02d"%int(results[6]//60),":","%02d"%int(results[6]%60),"</p>")
 
     
         
-def main():
-    os.system("clear")
-    print("小浪底公交服务系统v1.3")  
-    global linemap
-    isended=0
-    global timenow
-    global issunday
-    issunday = 1
-    global charge
-    try:
-        print("系统时间？\n ")
-        print(color.UNDERLINE+"0 否"+color.END,end="\t")
-        print(color.UNDERLINE+"1 是"+color.END,end="\n")
-        systemtime=int(input(""))
-    except ValueError:
-        print("")
-    if systemtime:
-        hour=time.localtime().tm_hour
-        minute=time.localtime().tm_min
-        issunday=0
-    else:
-        os.system("clear")
-        try: hour=int(input("小时\n"))
-        except ValueError:
-            print("")
-        os.system("clear")
-        try: minute=int(input("分钟\n"))
-        except ValueError:
-            print("")
-        os.system("clear")
-    timenow=60*hour+minute
-    for i in list_station:
-        i.initialiser()
-    charge=round(rd.randint(5,2000)/10,1)
-    while(isended==0):
-        linemap=cv.imread("real.png")
-        os.system("clear")
-        if systemtime:
-            hour=time.localtime().tm_hour
-            minute=time.localtime().tm_min
-            issunday=is_week_lastday()
-            timenow=60*hour+minute
-        print("%02d"%int(hour),":","%02d"%int(minute),end=" ")
-        if issunday:
-            print("星期天",end=" ")
-        else:
-            print("工作日",end=" ")
-        print("余额 ",round(charge,1),"元")
-        print(color.UNDERLINE+"0 退出系统"+color.END,end="\n")
-        print(color.UNDERLINE+"1 路线查询"+color.END,end="\t")
-        print(color.UNDERLINE+"2 购票系统"+color.END,end="\t")        
-        print(color.UNDERLINE+"3 线路查询"+color.END,end="\t")
-        print(color.UNDERLINE+"4 候车查询"+color.END,end="\t")
-        print(color.UNDERLINE+"5 账户查询"+color.END)
-        option=-1
-        while(option>10 or option<0):
-            try:
-                option=int(input(""))
-            except ValueError:
-                print("")
-            os.system("clear")
-        if option==3:
-            searchline()
-        if option==4:
-            searchstation()
-        if option==5:
-            acount()
-        if option==2:
-            achat()
-        if option==1:
-            get_station=0
-            while(get_station==0):
-                startstation=input("出发地\n输入汉语全称或者拼音首字母\n")
-                os.system("clear")                
-                endstation=input("目的地\n输入汉语全称或者拼音首字母\n")
-                os.system("clear")
-                if startstation=="s" and endstation=="s":
-                    startstation=list_station[rd.randint(0,len(list_station))].get_name()
-                    endstation=list_station[rd.randint(0,len(list_station))].get_name()
-                for i in list_station:
-                    if startstation==i.get_name():
-                        stationstarted=i
-                        get_station=1
-                    if endstation==i.get_name():
-                        stationended=i
-                        get_station=1
-            route=[]
-            route=search1(stationstarted,stationended,route)
-            route=search2(stationstarted,stationended,route)
-            if len(route) < 10:
-               route=search3(stationstarted,stationended,route)
-            if len(route) < 2:
-               route=search4(stationstarted,stationended,route)
-            route_sorted=sorted(route, key=lambda s: s[-1])
-            number_route = len(route_sorted)
-            route_sorted_to_delete_index = []
-            for j in range(number_route):
-               if route_sorted[j][0] == 2 and route_sorted[j][1] == route_sorted[j][3]:
-                  route_sorted_to_delete_index.append(j)
-               if route_sorted[j][0] == 3 and (route_sorted[j][1] == route_sorted[j][3] or route_sorted[j][1] == route_sorted[j][5] or route_sorted[j][3] == route_sorted[j][5]):
-                  route_sorted_to_delete_index.append(j)
-               if route_sorted[j][0] == 5 and (
-                     route_sorted[j][1] == route_sorted[j][3] or
-                     route_sorted[j][1] == route_sorted[j][5] or
-                     route_sorted[j][1] == route_sorted[j][7] or
-                     route_sorted[j][3] == route_sorted[j][5] or
-                     route_sorted[j][3] == route_sorted[j][7] or
-                     route_sorted[j][5] == route_sorted[j][7]   
-               ):
-                  route_sorted_to_delete_index.append(j)
-            for j in range(number_route-1):
-               for k in range(number_route-1):
-                  if k+1 > j:
-                     if route_sorted[j][0] == route_sorted[k+1][0]:
-                        if route_sorted[j][0] == 2:
-                           if route_sorted[j][1] == route_sorted[k+1][1] and route_sorted[j][3] == route_sorted[k+1][3]:
-                              if k+1 not in route_sorted_to_delete_index:
-                                 route_sorted_to_delete_index.append(k+1)
-                              break
-                        if route_sorted[j][0] == 3:
-                           if route_sorted[j][1] == route_sorted[k+1][1] and route_sorted[j][3] == route_sorted[k+1][3] and route_sorted[j][5] == route_sorted[k+1][5]:
-                              if k+1 not in route_sorted_to_delete_index:
-                                 route_sorted_to_delete_index.append(k+1)
-                              break
-                        if route_sorted[j][0] == 4:
-                           if route_sorted[j][1] == route_sorted[k+1][1] and route_sorted[j][3] == route_sorted[k+1][3] and route_sorted[j][5] == route_sorted[k+1][5] and route_sorted[j][7] == route_sorted[k+1][7]:
-                              if k+1 not in route_sorted_to_delete_index:
-                                 route_sorted_to_delete_index.append(k+1)
-                              break
-#            print(route_sorted_to_delete_index)
-            remove_by_indices(route_sorted, route_sorted_to_delete_index)
-            route_sorted2 = [element for index, element in enumerate(route_sorted) if index not in route_sorted_to_delete_index]
-
-            
-            isshortend=0
-            while isshortend==0:
-               os.system("clear")
-               print(color.BOLD+startstation+color.END,color.BOLD+"---->"+color.END,color.BOLD+endstation+color.END,"\n")
-               for i in range(min(len(route_sorted2),10)):
-                  ticketflag_short=[]
-                  print("路线",i+1," ",end="")
-                  displayresults_short(route_sorted2[i],startstation,endstation,ticketflag_short)
-               signal2 = 0
-               try:
-                  print(color.UNDERLINE+"0 退出\t"+color.END,color.UNDERLINE+"输入其他数字查看详情\n"+color.END)
-                  signal2=int(input(""))
-               except ValueError:
-                  print("")
-               if signal2 == 0:
-                  isshortend = 1
-               if signal2 > 0:                  
-                  isendeded=0
-                  if len(route_sorted2)<1:
-                     isendeded=1
-                  order=signal2 - 1
-                  while isendeded==0:
-                     ticketflag=[]
-                     os.system("clear")                
-                     displayresults(route_sorted2[order],startstation,endstation,ticketflag)
-                     print(order+1,"/",len(route_sorted2))
-                     try:
-                        print(color.UNDERLINE+"0 退出\t"+color.END,color.UNDERLINE+"1 下一结果\t"+color.END,color.UNDERLINE+"2 上一结果\n"+color.END)
-                        signal=int(input(""))
-                     except ValueError:
-                        print("")
-                        os.system("clear")                
-                     if signal==0:
-                        isendeded=1
-                     else:
-                        linemap=cv.imread("real.png")
-                        if signal==1:
-                           order+=1
-                        if signal==2:
-                           order-=1
-                        if order>=len(route_sorted2):
-                           order=len(route_sorted2)-1
-                        if order<0:
-                           order=0
-
-                
-                    
-        if option==0:
-            isended=1
-        if isended==0:
-            try:
-                print(color.UNDERLINE+"\n\n 0 返回\n"+color.END)
-                isended=int(input(""))
-            except ValueError:
-                print("")
 
 line_extra_info = read_excel("line-stations-data/line-extra-info.xls", 0)
-
 line_number = []
 line_company = []
 line_timetable_type = []
@@ -1085,97 +648,127 @@ for i in list_station:
    i.add_shortname("xxx")
    list_station_name.append(i.get_name())
 
-
-
-
-st.set_page_config(
-    page_title="小浪底公共出行企划书｜小浪底大众运输查询系统",
-    page_icon="🚌",
-)
-st.title("路线规划")
-
-if 'selected_time' not in st.session_state:
-    st.session_state.selected_time = datetime.now().time()
-
-
-col1, col2 ,col3= st.columns(3)
-with col1:
-    start_station = st.selectbox("从哪一站出发？",list_station_name,index = 30)
-with col2:
-    end_station = st.selectbox("想去哪里？",list_station_name,index = 10)
-with col3:
-    selected_time = st.time_input("出发时间", value=st.session_state.selected_time)
-is_button_applied = st.button("开始规划")
-
-def local_css(file_name):
-    with open(file_name) as f:
-        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-
-local_css("style.css")
-
-#hour=time.localtime().tm_hour
-#minute=time.localtime().tm_min
-hour = selected_time.hour
-minute = selected_time.minute
 issunday=0
-timenow=60*hour+minute
 for i in list_station:
     i.initialiser()
 
+st.set_page_config(
+    page_title="小浪底大区公共交通查询系统",
+    page_icon="logo.png"
+)
 
-if is_button_applied:
-    for i in list_station:
-        if start_station==i.get_name():
-            stationstarted=i
-        if end_station==i.get_name():
-            stationended=i
-    route=[]
-    route=search1(stationstarted,stationended,route)
-    route=search2(stationstarted,stationended,route)
-    if len(route) < 10:
-       route=search3(stationstarted,stationended,route)
-    if len(route) < 2:
-       route=search4(stationstarted,stationended,route)
-    route_sorted=sorted(route, key=lambda s: s[-1])
-    number_route = len(route_sorted)
-    route_sorted_to_delete_index = []
-    for j in range(number_route):
-       if route_sorted[j][0] == 2 and route_sorted[j][1] == route_sorted[j][3]:
-          route_sorted_to_delete_index.append(j)
-       if route_sorted[j][0] == 3 and (route_sorted[j][1] == route_sorted[j][3] or route_sorted[j][1] == route_sorted[j][5] or route_sorted[j][3] == route_sorted[j][5]):
-          route_sorted_to_delete_index.append(j)
-       if route_sorted[j][0] == 5 and (
-             route_sorted[j][1] == route_sorted[j][3] or
-             route_sorted[j][1] == route_sorted[j][5] or
-             route_sorted[j][1] == route_sorted[j][7] or
-             route_sorted[j][3] == route_sorted[j][5] or
-             route_sorted[j][3] == route_sorted[j][7] or
-             route_sorted[j][5] == route_sorted[j][7]   
-       ):
-          route_sorted_to_delete_index.append(j)
-    for j in range(number_route-1):
-       for k in range(number_route-1):
-          if k+1 > j:
-             if route_sorted[j][0] == route_sorted[k+1][0]:
-                if route_sorted[j][0] == 2:
-                   if route_sorted[j][1] == route_sorted[k+1][1] and route_sorted[j][3] == route_sorted[k+1][3]:
-                      if k+1 not in route_sorted_to_delete_index:
-                         route_sorted_to_delete_index.append(k+1)
-                      break
-                if route_sorted[j][0] == 3:
-                   if route_sorted[j][1] == route_sorted[k+1][1] and route_sorted[j][3] == route_sorted[k+1][3] and route_sorted[j][5] == route_sorted[k+1][5]:
-                      if k+1 not in route_sorted_to_delete_index:
-                         route_sorted_to_delete_index.append(k+1)
-                      break
-                if route_sorted[j][0] == 4:
-                   if route_sorted[j][1] == route_sorted[k+1][1] and route_sorted[j][3] == route_sorted[k+1][3] and route_sorted[j][5] == route_sorted[k+1][5] and route_sorted[j][7] == route_sorted[k+1][7]:
-                      if k+1 not in route_sorted_to_delete_index:
-                         route_sorted_to_delete_index.append(k+1)
-                      break
-#            print(route_sorted_to_delete_index)
-    remove_by_indices(route_sorted, route_sorted_to_delete_index)
-    route_sorted2 = [element for index, element in enumerate(route_sorted) if index not in route_sorted_to_delete_index]
-    for i in range(min(len(route_sorted2),10)):
-        ticketflag_short=[]
-        # st.write("路线",i+1)
-        displayresults_short_streamlit(route_sorted2[i],start_station,end_station,ticketflag_short)
+timenow = datetime.now().time().hour*60+datetime.now().time().minute
+
+
+def route_searcher():
+    st.title("路线规划")
+    
+    if 'selected_time' not in st.session_state:
+        st.session_state.selected_time = datetime.now().time()
+    
+    
+    col1, col2 ,col3= st.columns(3)
+    with col1:
+        start_station = st.selectbox("从哪一站出发？",list_station_name,index = 30)
+    with col2:
+        end_station = st.selectbox("想去哪里？",list_station_name,index = 10)
+    with col3:
+        selected_time = st.time_input("出发时间", value=st.session_state.selected_time)
+    is_button_applied = st.button("开始规划")
+    
+    def local_css(file_name):
+        with open(file_name) as f:
+            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+    
+    local_css("style.css")
+    
+    #hour=time.localtime().tm_hour
+    #minute=time.localtime().tm_min
+    hour = selected_time.hour
+    minute = selected_time.minute
+    timenow=60*hour+minute
+    
+    
+    
+    if is_button_applied:
+        for i in list_station:
+            if start_station==i.get_name():
+                stationstarted=i
+            if end_station==i.get_name():
+                stationended=i
+        route=[]
+        route=search1(stationstarted,stationended,route)
+        route=search2(stationstarted,stationended,route)
+        if len(route) < 10:
+           route=search3(stationstarted,stationended,route)
+        if len(route) < 2:
+           route=search4(stationstarted,stationended,route)
+        route_sorted=sorted(route, key=lambda s: s[-1])
+        number_route = len(route_sorted)
+        route_sorted_to_delete_index = []
+        for j in range(number_route):
+           if route_sorted[j][0] == 2 and route_sorted[j][1] == route_sorted[j][3]:
+              route_sorted_to_delete_index.append(j)
+           if route_sorted[j][0] == 3 and (route_sorted[j][1] == route_sorted[j][3] or route_sorted[j][1] == route_sorted[j][5] or route_sorted[j][3] == route_sorted[j][5]):
+              route_sorted_to_delete_index.append(j)
+           if route_sorted[j][0] == 5 and (
+                 route_sorted[j][1] == route_sorted[j][3] or
+                 route_sorted[j][1] == route_sorted[j][5] or
+                 route_sorted[j][1] == route_sorted[j][7] or
+                 route_sorted[j][3] == route_sorted[j][5] or
+                 route_sorted[j][3] == route_sorted[j][7] or
+                 route_sorted[j][5] == route_sorted[j][7]   
+           ):
+              route_sorted_to_delete_index.append(j)
+        for j in range(number_route-1):
+           for k in range(number_route-1):
+              if k+1 > j:
+                 if route_sorted[j][0] == route_sorted[k+1][0]:
+                    if route_sorted[j][0] == 2:
+                       if route_sorted[j][1] == route_sorted[k+1][1] and route_sorted[j][3] == route_sorted[k+1][3]:
+                          if k+1 not in route_sorted_to_delete_index:
+                             route_sorted_to_delete_index.append(k+1)
+                          break
+                    if route_sorted[j][0] == 3:
+                       if route_sorted[j][1] == route_sorted[k+1][1] and route_sorted[j][3] == route_sorted[k+1][3] and route_sorted[j][5] == route_sorted[k+1][5]:
+                          if k+1 not in route_sorted_to_delete_index:
+                             route_sorted_to_delete_index.append(k+1)
+                          break
+                    if route_sorted[j][0] == 4:
+                       if route_sorted[j][1] == route_sorted[k+1][1] and route_sorted[j][3] == route_sorted[k+1][3] and route_sorted[j][5] == route_sorted[k+1][5] and route_sorted[j][7] == route_sorted[k+1][7]:
+                          if k+1 not in route_sorted_to_delete_index:
+                             route_sorted_to_delete_index.append(k+1)
+                          break
+    #            print(route_sorted_to_delete_index)
+        remove_by_indices(route_sorted, route_sorted_to_delete_index)
+        route_sorted2 = [element for index, element in enumerate(route_sorted) if index not in route_sorted_to_delete_index]
+        for i in range(min(len(route_sorted2),10)):
+            ticketflag_short=[]
+            # st.write("路线",i+1)
+            displayresults_short_streamlit(route_sorted2[i],start_station,end_station,ticketflag_short)
+            
+            
+def line_searcher():
+    st.title("线路信息")
+    # Add content and functionality for line searcher here
+
+def station_searcher():
+    st.title("候车查询")
+    # Add content and functionality for station searcher here
+
+
+def main():
+    st.sidebar.image("logo.png")
+    
+    page_selection = st.sidebar.radio("", ("路线规划", "线路信息", "候车查询"))
+
+    if page_selection == "路线规划":
+        route_searcher()
+    elif page_selection == "线路信息":
+        line_searcher()
+    elif page_selection == "候车查询":
+        station_searcher()
+
+if __name__ == "__main__":
+    main()
+    
