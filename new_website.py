@@ -173,6 +173,31 @@ class busline:
                     connectiontemp2=1
         self.affichage_timetable()
     
+    def get_info_streamlit(self):
+        st.subheader(self.get_numero(), "路")
+        if self.__proprity==0:
+            st.write("小浪底大众运输公司运营", "监督电话030-41224100")
+        elif self.__proprity==1:
+            st.write("小浪底白鹿原通勤公司运营", "监督电话030-41224200") 
+        elif self.__proprity==2:
+            st.write("小浪底北郊大众运输专门组织运营","监督电话030-41224105")
+        else:
+            st.write("小浪底南郊大众运输专门组织运营","监督电话030-45882155")
+        st.write("首班车",self.__starttime,"点", "，末班车",self.__endtime,"点","\n")
+        st.write()
+        st.markdown('<span style="font-weight:bold;font-size:18px;">站点</span>',unsafe_allow_html=True)
+        connectiontemp2=0
+        for m in self.__station:
+            for n in list_station:
+                if m==n.get_name():
+                    if connectiontemp2==1:
+                        pass#print("|")                        
+                    st.write(str(int(self.get_interval()[self.__station.index(m)])),"分 ",m)
+                    connectiontemp2=1
+        self.affichage_timetable_streamlit()
+
+    
+    
     def get_starttime(self):
         return self.__starttime
     
@@ -180,7 +205,7 @@ class busline:
         return self.__endtime
     
     def affichage_timetable(self):
-        print(color.BOLD+"\n上行发车时刻表"+color.END)
+        print(color.BOLD+"\n发车时刻表"+color.END)
         hourtemp=-1
         issunday = 0
         if issunday==1:
@@ -195,6 +220,18 @@ class busline:
                     print("\n","%02d"%(i//60),"\t",end="")
                 print("%02d"%(i%60),end=" ")
                 hourtemp=i//60
+    def affichage_timetable_streamlit(self):
+        st.markdown('<span style="font-weight:bold;font-size:18px;">双向对发时刻表</span>',unsafe_allow_html=True)
+        hourtemp=-1
+        issunday = 0
+        timetable_output_str = ""
+        for i in self.__timetable1:
+            if i <1440:
+                if i//60!=hourtemp:
+                    timetable_output_str += "  \n" + '<span style="font-weight:bold;">' +"%02d"%(i//60)+"</span>&nbsp;&nbsp;&nbsp;&nbsp;"
+                timetable_output_str += "%02d"%(i%60) + "&nbsp;&nbsp;"
+                hourtemp=i//60
+        st.markdown(timetable_output_str,unsafe_allow_html=True)
     
     def get_timetable(self):
         if issunday==1:
@@ -244,6 +281,15 @@ class Station:
         print("停靠巴士")
         print(self.get_line())
         self.get_timetable()
+    def get_info_streamlit(self):
+        st.subheader(self.get_name())
+        st.markdown('<span style="font-size:18px; font-weight:bold;">停靠线路', unsafe_allow_html=True)
+        output_line_list = ""
+        for i in self.get_line():
+            output_line_list += str(i) + "&nbsp;&nbsp;"
+        st.markdown(output_line_list, unsafe_allow_html=True)
+        self.get_timetable_streamlit()
+        
         
     def initialiser(self):
         for i in self.__line:
@@ -288,6 +334,26 @@ class Station:
                 for k in waiting_time:
                     print(int(k),end=" ") 
                 print("")
+
+    def get_timetable_streamlit(self):
+        for i in self.__timetable:
+            waiting_time = []
+            for j in i[2]:      
+                time_rest=j-timenow  
+                if j>timenow:
+                    waiting_time.append(time_rest)
+                    if len(waiting_time)>2:
+                        break
+            output_str = ""
+            if time_rest<0:
+                output_str += '<span style="font-weight:bold;">' + str(i[0]) + '</span> &nbsp;&nbsp;' + '<span style="font-weight:bold;">' + i[1] + "</span>停止营运"
+            else:
+                output_str += '<span style="font-weight:bold;">' + str(i[0]) + '</span> &nbsp;&nbsp;' + '<span style="font-weight:bold;">' + i[1] + "</span>"
+                for k in waiting_time:
+                    output_str += "&nbsp;" + str(int(k)) + "&nbsp;"
+                output_str += "    \n"
+            st.markdown(output_str, unsafe_allow_html=True)
+
     def give_timetable(self):
         return self.__timetable
 
@@ -647,6 +713,10 @@ for i in list_station:
    i.add_position([1,1,1,1],1)
    i.add_shortname("xxx")
    list_station_name.append(i.get_name())
+   
+list_line_name = []
+for i in list_line:
+    list_line_name.append(str(i.get_numero()))
 
 issunday=0
 for i in list_station:
@@ -666,15 +736,16 @@ def route_searcher():
     if 'selected_time' not in st.session_state:
         st.session_state.selected_time = datetime.now().time()
     
-    
+    random_start_number = rd.randint(0,len(list_station))
+    random_end_number = rd.randint(0,len(list_station))
     col1, col2 ,col3= st.columns(3)
     with col1:
-        start_station = st.selectbox("从哪一站出发？",list_station_name,index = 30)
+        start_station = st.selectbox("出发地",list_station_name,index = random_start_number)
     with col2:
-        end_station = st.selectbox("想去哪里？",list_station_name,index = 10)
+        end_station = st.selectbox("目的地",list_station_name,index = random_end_number)
     with col3:
         selected_time = st.time_input("出发时间", value=st.session_state.selected_time)
-    is_button_applied = st.button("开始规划")
+    is_button_applied = st.button("查询")
     
     def local_css(file_name):
         with open(file_name) as f:
@@ -684,13 +755,15 @@ def route_searcher():
     
     #hour=time.localtime().tm_hour
     #minute=time.localtime().tm_min
-    hour = selected_time.hour
-    minute = selected_time.minute
-    timenow=60*hour+minute
+
     
     
     
     if is_button_applied:
+        hour = selected_time.hour
+        minute = selected_time.minute
+        global timenow
+        timenow=60*hour+minute
         for i in list_station:
             if start_station==i.get_name():
                 stationstarted=i
@@ -750,14 +823,34 @@ def route_searcher():
             
 def line_searcher():
     st.title("线路信息")
-    # Add content and functionality for line searcher here
+    st.subheader("查询路号")
+    line_selected = st.selectbox("",list_line_name,index = 0)
+    lineselected = list_line[0]
+    for i in list_line:
+        if line_selected == str(i.get_numero()) :
+            lineselected = i
+    lineselected.get_info_streamlit()
+    
+    st.write("核心线路")
+    st.image(["line_logo/1.png","line_logo/3.png","line_logo/4.png","line_logo/5.png","line_logo/6.png","line_logo/95.png"])
+    st.write("主干线路")
+    st.image(["line_logo/2.png","line_logo/7.png","line_logo/8.png","line_logo/9.png","line_logo/10.png","line_logo/11.png","line_logo/12.png","line_logo/16.png","line_logo/60.png","line_logo/96.png"])
+    st.write("支线")
+    st.image(["line_logo/14.png","line_logo/15.png","line_logo/17.png","line_logo/50.png","line_logo/51.png","line_logo/61.png","line_logo/62.png","line_logo/63.png","line_logo/64.png","line_logo/69.png","line_logo/91.png","line_logo/92.png","line_logo/93.png","line_logo/97.png","line_logo/98.png","line_logo/99.png"])
+
+
 
 def station_searcher():
     st.title("候车查询")
-    # Add content and functionality for station searcher here
+    st.subheader("选择站点")
+    station_selected= st.selectbox("", list_station_name, index=0)
+    stationselected = list_station[0]
+    for i in list_station:
+        if station_selected == i.get_name():
+            stationselected = i
+    stationselected.get_info_streamlit()
 
-
-def main():
+def main(): 
     st.sidebar.image("logo.png")
     
     page_selection = st.sidebar.radio("", ("路线规划", "线路信息", "候车查询"))

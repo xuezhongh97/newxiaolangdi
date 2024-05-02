@@ -1,28 +1,19 @@
-import streamlit as st
+import folium
 
-# Define the details for each bus line
-bus_lines = [
-    {"name": "Bus Line 1", "logo_path": "line_logo/1.png", "details": "Details for Bus Line 1..."},
-    {"name": "Bus Line 2", "logo_path": "line_logo/1.png", "details": "Details for Bus Line 2..."},
-    # Add details for other bus lines here
+# 创建地图对象，设置初始位置和缩放级别
+m = folium.Map(location=[52.5200, 13.4050], zoom_start=12)  # 例如，以柏林为中心
+
+# 定义路线的起点和终点坐标
+route = [
+    [52.5200, 13.4050],  # 起点坐标
+    [52.5206, 13.4100],  # 途经点
+    [52.5156, 13.3776]   # 终点坐标
 ]
 
-def main():
-    st.title("Bus Line Gallery")
+# 在地图上添加折线
+folium.PolyLine(route, color='blue', weight=5, opacity=0.8).add_to(m)
 
-    # Display a gallery for all bus lines
-    num_columns = 3  # Number of columns to display
-    col_width = 1 / num_columns  # Column width
-
-    for i in range(0, len(bus_lines), num_columns):
-        row = bus_lines[i:i + num_columns]
-        cols = st.columns(num_columns)
-        for col, line in zip(cols, row):
-            col.write(f"## {line['name']}")
-            logo_clicked = col.image(line["logo_path"], use_column_width=True, caption=f"Click logo to see details")
-            if logo_clicked:
-                col.write(f"Details for {line['name']}:")
-                col.write(line["details"])
-
-if __name__ == "__main__":
-    main()
+# 保存地图到 HTML 文件，或直接显示
+m.save('route.html')  # 保存到文件
+# 或直接在 Jupyter Notebook 中显示
+# m
