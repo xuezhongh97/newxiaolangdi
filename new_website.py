@@ -736,13 +736,11 @@ def route_searcher():
     if 'selected_time' not in st.session_state:
         st.session_state.selected_time = datetime.now().time()
     
-    random_start_number = rd.randint(0,len(list_station))
-    random_end_number = rd.randint(0,len(list_station))
     col1, col2 ,col3= st.columns(3)
     with col1:
-        start_station = st.selectbox("出发地",list_station_name,index = random_start_number)
+        start_station = st.selectbox("出发地",list_station_name,index = 0)
     with col2:
-        end_station = st.selectbox("目的地",list_station_name,index = random_end_number)
+        end_station = st.selectbox("目的地",list_station_name,index = 10)
     with col3:
         selected_time = st.time_input("出发时间", value=st.session_state.selected_time)
     is_button_applied = st.button("查询")
@@ -841,6 +839,8 @@ def line_searcher():
 
 
 def station_searcher():
+    global timenow
+    timenow = datetime.now().time().hour*60+datetime.now().time().minute
     st.title("候车查询")
     st.subheader("选择站点")
     station_selected= st.selectbox("", list_station_name, index=0)
