@@ -11,6 +11,9 @@ import matplotlib.image as mpimg # mpimg 用于读取图片
 import random as rd
 from PIL import Image, ImageDraw, ImageFont
 from datetime import datetime, time
+import csv
+from streamlit_folium import folium_static
+import folium
 
 
 
@@ -249,6 +252,7 @@ class Station:
         self.__position=[1,1,1,1]
         self.__zone=zone
         self.__shortname=[]
+        self.__openposition=[112.3864124,34.93619181]
     def get_name(self):
         return self.__name
         
@@ -268,6 +272,12 @@ class Station:
     def add_position(self,position,zone):
         self.__position=position
         self.__zone=zone
+    
+    def add_openposition(self, position):
+        self.__openposition=position
+        
+    def get_openposition(self):
+        return self.__openposition
         
     def get_shortname(self):
         return self.__shortname
@@ -290,6 +300,14 @@ class Station:
         st.markdown(output_line_list, unsafe_allow_html=True)
         self.get_timetable_streamlit()
         
+    def get_info_streamlit_popup(self):
+        output_line_list = '<p>停靠线路</p><p>'
+        for i in self.get_line():
+            output_line_list += str(i) + "&nbsp;&nbsp;"
+        output_line_list += '</p>'
+        return output_line_list
+
+
         
     def initialiser(self):
         for i in self.__line:
@@ -346,13 +364,34 @@ class Station:
                         break
             output_str = ""
             if time_rest<0:
-                output_str += '<span style="font-weight:bold;">' + str(i[0]) + '</span> &nbsp;&nbsp;' + '<span style="font-weight:bold;">' + i[1] + "</span>停止营运"
+                output_str += '<span style="font-weight:bold;">' + str(i[0]) + '路</span> &nbsp;&nbsp;' + '<span style="font-weight:bold;">' + i[1] + "</span>停止营运"
             else:
-                output_str += '<span style="font-weight:bold;">' + str(i[0]) + '</span> &nbsp;&nbsp;' + '<span style="font-weight:bold;">' + i[1] + "</span>"
+                output_str += '<span style="font-weight:bold;">' + str(i[0]) + '路</span> &nbsp;&nbsp;开往' + '<span style="font-weight:bold;">' + i[1] + "方向</span>等待"
                 for k in waiting_time:
                     output_str += "&nbsp;" + str(int(k)) + "&nbsp;"
-                output_str += "    \n"
+                output_str += "分钟    \n"
             st.markdown(output_str, unsafe_allow_html=True)
+            
+    def get_timetable_streamlit_popup(self):
+        output_str = ""
+        for i in self.__timetable:
+            output_str += "<p>"
+            waiting_time = []
+            for j in i[2]:      
+                time_rest=j-timenow  
+                if j>timenow:
+                    waiting_time.append(time_rest)
+                    if len(waiting_time)>2:
+                        break
+
+            if time_rest<0:
+                output_str += str(i[0]) + '&nbsp;&nbsp;' + i[1] + "停止营运"
+            else:
+                output_str += str(i[0]) + '路开往' + i[1] + "方向 等待"
+                for k in waiting_time:
+                    output_str += "&nbsp;" + str(int(k)) + "&nbsp;"
+                output_str += "分钟</p>"
+        return output_str
 
     def give_timetable(self):
         return self.__timetable
@@ -709,11 +748,24 @@ prince_list=[
 
 list_station_name = []
 
+station_position_data = read_excel("line-stations-data/stations-info.xls", 0)
+
 for i in list_station:
-   i.add_position([1,1,1,1],1)
-   i.add_shortname("xxx")
-   list_station_name.append(i.get_name())
+    for j in station_position_data:
+        if i.get_name() == j[0]:
+            i.add_openposition([j[3],j[4]])
+    i.add_position([1,1,1,1],1)
+    i.add_shortname("xxx")
+    list_station_name.append(i.get_name())
    
+# print(list_station_name)
+# csv_file = 'line-stations-data/stations-info-original.csv'
+# with open(csv_file, mode='w', newline='', encoding='utf-8-sig') as file:
+#     writer = csv.writer(file)
+    
+#     for row in list_station_name:
+#         writer.writerow(row)
+        
 list_line_name = []
 for i in list_line:
     list_line_name.append(str(i.get_numero()))
@@ -821,13 +873,6 @@ def route_searcher():
             
 def line_searcher():
     st.title("线路信息")
-    st.subheader("查询路号")
-    line_selected = st.selectbox("",list_line_name,index = 0)
-    lineselected = list_line[0]
-    for i in list_line:
-        if line_selected == str(i.get_numero()) :
-            lineselected = i
-    lineselected.get_info_streamlit()
     
     st.write("核心线路")
     st.image(["line_logo/1.png","line_logo/3.png","line_logo/4.png","line_logo/5.png","line_logo/6.png","line_logo/95.png"])
@@ -837,18 +882,57 @@ def line_searcher():
     st.image(["line_logo/14.png","line_logo/15.png","line_logo/17.png","line_logo/50.png","line_logo/51.png","line_logo/61.png","line_logo/62.png","line_logo/63.png","line_logo/64.png","line_logo/69.png","line_logo/91.png","line_logo/92.png","line_logo/93.png","line_logo/97.png","line_logo/98.png","line_logo/99.png"])
 
 
+    
+    st.subheader("查询路号")
+    line_selected = st.selectbox("",list_line_name,index = 0)
+    lineselected = list_line[0]
+    for i in list_line:
+        if line_selected == str(i.get_numero()) :
+            lineselected = i
+    color_str = 'rgb({}, {}, {})'.format(lineselected.get_linecolor()[0], lineselected.get_linecolor()[1], lineselected.get_linecolor()[2])
+    m = folium.Map(location=[34.93619181,112.3864124], zoom_start=14)  
+    coordinates = []
+    for i in lineselected.get_station():
+        for j in list_station:
+            if i == j.get_name():
+                folium.CircleMarker(location=[j.get_openposition()[1], j.get_openposition()[0]], tooltip=j.get_name(), max_width=300, fill_opacity=0.6,  fill = True, opacity=1, color=color_str, stroke=False).add_to(m)
+                coordinates.append([float(j.get_openposition()[1]),float( j.get_openposition()[0])])
+    folium.PolyLine(locations=coordinates, color=color_str).add_to(m)
+    folium_static(m)    
+
+            
+            
+    lineselected.get_info_streamlit()
+    
+
 
 def station_searcher():
     global timenow
     timenow = datetime.now().time().hour*60+datetime.now().time().minute
     st.title("候车查询")
-    st.subheader("选择站点")
+    timestr = "当前时刻" + "%02d"%int(timenow//60) + ":" + "%02d"%int(timenow%60)
+    st.write(timestr)
+    st.subheader("点击站点查询")
+
+    
+    m = folium.Map(location=[34.93619181,112.3864124], zoom_start=14)  
+    
+
+    for i in list_station:
+        show_str = i.get_name() + "    \n"
+        show_str += i.get_info_streamlit_popup() + i.get_timetable_streamlit_popup()
+        folium.CircleMarker(location=[i.get_openposition()[1], i.get_openposition()[0]], popup=show_str, max_width=300, tooltip=i.get_name(), fill_opacity=0.6,  fill = True, opacity=1, stroke=False).add_to(m)
+
+    folium_static(m)    
+    
+    st.subheader("或选择/输入站点")
     station_selected= st.selectbox("", list_station_name, index=0)
     stationselected = list_station[0]
     for i in list_station:
         if station_selected == i.get_name():
             stationselected = i
     stationselected.get_info_streamlit()
+    
 
 def main(): 
     st.sidebar.image("logo.png")
