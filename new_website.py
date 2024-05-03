@@ -1120,8 +1120,9 @@ def station_searcher():
     
 
 def browser_map():
-    pdf_path = "./plan2024mini.pdf"
-    st.markdown(f'<embed src="{pdf_path}" width="700" height="1000">', unsafe_allow_html=True)    
+    github_pdf_url = "https://github.com/xuezhongh97/newxiaolangdi/blob/main/plan2024mini.pdf"
+    st.markdown(f'[小浪底大区公共交通线路图、核心线路图、综合时刻表、票价]({github_pdf_url})')
+
 def main(): 
     st.sidebar.image("logo.png")
     
