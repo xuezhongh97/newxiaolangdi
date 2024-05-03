@@ -839,7 +839,7 @@ def displayresults_short_streamlit (route,startstation,endstation,ticketflag):
     spendtime = results[6] - timenow
     output_content += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + "&nbsp;&nbsp;约" + "%d"%int(spendtime) + "分钟&nbsp;&nbsp;" + "%02d"%int(results6//60) + ":" + "%02d"%int(results6%60) + "到达"
     with st.expander(output_content):
-        m = folium.Map(location=[34.93619181,112.3864124], zoom_start=14)  
+        m = folium.Map(location=[34.93619181,112.3864124], zoom_start=14,width='90%')  
         for i in range(len(lines_to_draw)):        
             folium.PolyLine(locations=lines_to_draw[i], color = color_to_draw[i]).add_to(m)
             for j in range(len(lines_to_draw[i])):
@@ -1061,7 +1061,7 @@ def line_searcher():
         if line_selected == str(i.get_numero()) :
             lineselected = i
     color_str = 'rgb({}, {}, {})'.format(lineselected.get_linecolor()[0], lineselected.get_linecolor()[1], lineselected.get_linecolor()[2])
-    m = folium.Map(location=[34.93619181,112.3864124], zoom_start=14)  
+    m = folium.Map(location=[34.93619181,112.3864124], zoom_start=14,width='90%')  
     coordinates = []
     for i in lineselected.get_station():
         for j in list_station:
@@ -1099,7 +1099,7 @@ def station_searcher():
     st.subheader("点击站点查询")
 
     
-    m = folium.Map(location=[34.93619181,112.3864124], zoom_start=14)  
+    m = folium.Map(location=[34.93619181,112.3864124], zoom_start=14,width='90%')  
     
 
     for i in list_station:
