@@ -1,12 +1,15 @@
 import streamlit as st
-from streamlit_folium import folium_static
-import folium
 
-# 创建地图对象，设置初始位置和缩放级别
-m = folium.Map(location=[34.93619181, 112.3864124], zoom_start=15)
+# 模拟选项卡的选项
+tabs = ["Home", "Profile", "Settings"]
 
-# 添加 Marker，使用 HTML 标签的加粗效果
-folium.Marker(location=[34.93619181, 112.3864124], popup="<b>站点 A</b><br>这是一个示例站点。").add_to(m)
+# 使用radio按钮在侧边栏创建选项卡效果
+tab_selection = st.sidebar.radio("Tabs", tabs)
 
-# 显示地图
-folium_static(m)
+# 根据选项卡显示内容
+if tab_selection == "Home":
+    st.write("This is the Home tab content.")
+elif tab_selection == "Profile":
+    st.write("This is the Profile tab content.")
+elif tab_selection == "Settings":
+    st.write("This is the Settings tab content.")
